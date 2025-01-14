@@ -1,2 +1,2 @@
-# static_site_generator
+# Static Site Generator
 Python Static Site Generator
