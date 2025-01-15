@@ -29,14 +29,14 @@ class TestHTMLNode(unittest.TestCase):
         children = []
         props = {"id":"test"}
         node = HTMLNode(tag=tag, value=value, children=children, props=props)
-        self.assertEqual(node.__repr__(), "HTMLNode (Tag: p Value: Some Value Children: [] Props: {'id': 'test'})")
+        self.assertEqual(node.__repr__(), "HTMLNode(p, Some Value, children: [], {'id': 'test'})")
 
 class TestLeafNode(unittest.TestCase):
     def test_LeafNode_value_err(self):
         node = LeafNode(tag=None, value=None)
         with self.assertRaises(ValueError) as context:
             node.to_html()
-        self.assertEqual(str(context.exception), "Value is required!")
+        self.assertEqual(str(context.exception), "Invalid HTML: no value")
     
     def test_LeafNode_text_output(self):
         tag=None
@@ -68,14 +68,14 @@ class TestParentNode(unittest.TestCase):
         node = ParentNode(tag=None, children=children)
         with self.assertRaises(ValueError) as context:
             node.to_html()
-        self.assertEqual(str(context.exception), "Tag is required!")
+        self.assertEqual(str(context.exception), "Invalid HTML: no tag")
 
     def test_ParentNode_no_children_err(self):
         tag = "p"
         node = ParentNode(tag=tag, children=None)
         with self.assertRaises(ValueError) as context:
             node.to_html()
-        self.assertEqual(str(context.exception), "No Children Found!")
+        self.assertEqual(str(context.exception), "Invalid HTML: no children")
 
     def test_ParentNode_output(self):
         tag = "p"
