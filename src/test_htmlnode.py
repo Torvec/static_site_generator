@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_HTMLNode_is_empty(self):
@@ -29,32 +29,86 @@ class TestHTMLNode(unittest.TestCase):
         children = []
         props = {"id":"test"}
         node = HTMLNode(tag=tag, value=value, children=children, props=props)
-        self.assertEqual(node.__repr__(), f"HTMLNode (Tag: {tag} Value: {value} Children: {children} Props: {props})")
+        self.assertEqual(node.__repr__(), "HTMLNode (Tag: p Value: Some Value Children: [] Props: {'id': 'test'})")
 
 class TestLeafNode(unittest.TestCase):
     def test_LeafNode_value_err(self):
         node = LeafNode(tag=None, value=None)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as context:
             node.to_html()
+        self.assertEqual(str(context.exception), "Value is required!")
     
     def test_LeafNode_text_output(self):
         tag=None
         value = "Some Text For Ya"
         node = LeafNode(tag=tag, value=value)
-        self.assertEqual(node.to_html(), f"{value}")
+        self.assertEqual(node.to_html(), "Some Text For Ya")
 
     def test_LeafNode_tag_no_attr_output(self):
         tag = "p"
         value = "Some values yo"
         node = LeafNode(tag=tag, value=value)
-        self.assertEqual(node.to_html(), f"<{tag}>{value}</{tag}>")
+        self.assertEqual(node.to_html(), "<p>Some values yo</p>")
 
     def test_LeafNode_tag_output(self):
         tag = "p"
         value = "Text In a Tag"
         props = {"class":"text"}
         node = LeafNode(tag=tag, value=value, props=props)
-        self.assertEqual(node.to_html(), f"<{tag} {node.props_to_html()}>{value}</{tag}>")
+        self.assertEqual(node.to_html(), '<p class="text">Text In a Tag</p>')
+
+class TestParentNode(unittest.TestCase):
+    def test_ParentNode_no_tag_err(self):
+        children = [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        node = ParentNode(tag=None, children=children)
+        with self.assertRaises(ValueError) as context:
+            node.to_html()
+        self.assertEqual(str(context.exception), "Tag is required!")
+
+    def test_ParentNode_no_children_err(self):
+        tag = "p"
+        node = ParentNode(tag=tag, children=None)
+        with self.assertRaises(ValueError) as context:
+            node.to_html()
+        self.assertEqual(str(context.exception), "No Children Found!")
+
+    def test_ParentNode_output(self):
+        tag = "p"
+        children = [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        node = ParentNode(tag=tag, children=children)
+        self.assertEqual(node.to_html(), "<p><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>")
+
+    def test_ParentNode_nested_output(self):
+        tag = 'p'
+        children = [
+            ParentNode(
+                tag = "a",
+                children = [
+                    LeafNode(None, "Google")
+                ],
+                props = {
+                    "href": "https://google.com/",
+                    "target": "_blank"    
+                },
+            ),
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        props = {"id":"test"}
+        node = ParentNode(tag=tag, children=children, props=props)
+        self.assertEqual(node.to_html(), '<p id="test"><a href="https://google.com/" target="_blank">Google</a><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>')
 
 if __name__ == "__main__":
     unittest.main()

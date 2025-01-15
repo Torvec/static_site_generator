@@ -12,9 +12,9 @@ class HTMLNode:
         if isinstance(self.props, dict):
             props_list = []
             for key, value in self.props.items():
-                prop_str = f' {key}="{value}"'
+                prop_str = f'{key}="{value}"'
                 props_list.append(prop_str)
-            return ''.join(props_list)
+            return " " + " ".join(props_list)
         return ""
     
     def __repr__(self):
@@ -25,10 +25,26 @@ class LeafNode(HTMLNode):
         super().__init__(tag=tag, value=value, props=props)
 
     def to_html(self):
-        if self.value == None or not self.value:
-            raise ValueError
+        if not self.value:
+            raise ValueError("Value is required!")
         if self.tag == None:
             return f"{self.value}"
         if self.props == None:
             return f"<{self.tag}>{self.value}</{self.tag}>"
-        return f"<{self.tag} {self.props_to_html()}>{self.value}</{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+    
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag=tag, children=children, props=props)
+
+    def to_html(self):
+        if not self.tag:
+            raise ValueError("Tag is required!")
+        if not self.children:
+            raise ValueError("No Children Found!")
+        children = ''
+        for child in self.children:
+            children += child.to_html()
+        if self.props == None:
+            return f"<{self.tag}>{children}</{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{children}</{self.tag}>"
