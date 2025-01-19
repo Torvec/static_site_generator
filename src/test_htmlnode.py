@@ -2,6 +2,7 @@ import unittest
 
 from htmlnode import HTMLNode, LeafNode, ParentNode
 
+
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html_empty(self):
         node = HTMLNode("p", "The Value", None, None)
@@ -20,6 +21,7 @@ class TestHTMLNode(unittest.TestCase):
         with self.assertRaises(NotImplementedError) as context:
             node.to_html()
         self.assertEqual(str(context.exception), "Method not implemented")
+
 
 class TestLeafNode(unittest.TestCase):
     def test_value_err(self):
@@ -43,6 +45,7 @@ class TestLeafNode(unittest.TestCase):
     def test_html_output_for_link(self):
         node = LeafNode("a", "A link", {"href":"https://www.boot.dev/", "target":"_blank"})
         self.assertEqual(node.to_html(), '<a href="https://www.boot.dev/" target="_blank">A link</a>')
+
 
 class TestParentNode(unittest.TestCase):
     def test_tag_err(self):
@@ -158,6 +161,7 @@ class TestParentNode(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             node.to_html()
         self.assertEqual(str(context.exception), "Children are required")
+
 
 if __name__ == "__main__":
     unittest.main()
