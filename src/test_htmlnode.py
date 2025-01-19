@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html_empty(self):
@@ -44,8 +44,120 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode("a", "A link", {"href":"https://www.boot.dev/", "target":"_blank"})
         self.assertEqual(node.to_html(), '<a href="https://www.boot.dev/" target="_blank">A link</a>')
 
-    def test_html_output_with_children(self):
-        node = LeafNode("p", "Some Text", )
+class TestParentNode(unittest.TestCase):
+    def test_tag_err(self):
+        children = [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        node = ParentNode("", children, None)
+        with self.assertRaises(ValueError) as context:
+            node.to_html()
+        self.assertEqual(str(context.exception), "A tag is required")
+
+    def test_children_err(self):
+        children = []
+        node = ParentNode("p", children, None)
+        with self.assertRaises(ValueError) as context:
+            node.to_html()
+        self.assertEqual(str(context.exception), "Children are required")
+
+    def test_one_child_output(self):
+        children = [
+            LeafNode("b", "Bold text"),
+        ]
+        node = ParentNode("p", children, None)
+        self.assertEqual(node.to_html(), '<p><b>Bold text</b></p>')
+
+    def test_multi_child_output(self):
+        children = [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ]
+        node = ParentNode("p", children, {"id":"intro"})
+        self.assertEqual(node.to_html(), '<p id="intro"><b>Bold text</b>Normal text<i>italic text</i>Normal text</p>')
+
+    def test_multi_parent_and_child_output(self):
+        nested_children = [
+            LeafNode("a", "A link", {"href":"https://www.boot.dev/", "target":"_blank"}),
+            LeafNode(None, "Normal text"),
+        ]
+        children = [
+            ParentNode("p", nested_children, None),
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+        ]
+        node = ParentNode("div", children, {"class":"wrapper", "id":"content"})
+        self.assertEqual(node.to_html(), '<div class="wrapper" id="content"><p><a href="https://www.boot.dev/" target="_blank">A link</a>Normal text</p><b>Bold text</b>Normal text</div>')
+
+    def test_nested_parent_child_output(self):
+        children_five = [
+            LeafNode("a", "Contact", {"href":"/contact"})
+        ]
+        children_four = [
+            LeafNode("a", "About", {"href":"/about"})
+        ]
+        children_three = [
+            LeafNode("a", "Home", {"href":"/home"})
+        ]
+        children_two = [
+            ParentNode("li", children_three, None),
+            ParentNode("li", children_four, None),
+            ParentNode("li", children_five, None)
+        ]
+        children_one = [
+            ParentNode("ul", children_two, None)
+        ]
+        node = ParentNode("nav", children_one, {"class":"navlist", "id":"navbar"})
+        self.assertEqual(node.to_html(), '<nav class="navlist" id="navbar"><ul><li><a href="/home">Home</a></li><li><a href="/about">About</a></li><li><a href="/contact">Contact</a></li></ul></nav>')
+
+    def test_nested_parent_tag_err(self):
+        children_five = [
+            LeafNode("a", "Contact", {"href":"/contact"})
+        ]
+        children_four = [
+            LeafNode("a", "About", {"href":"/about"})
+        ]
+        children_three = [
+            LeafNode("a", "Home", {"href":"/home"})
+        ]
+        children_two = [
+            ParentNode("li", children_three, None),
+            ParentNode("li", children_four, None),
+            ParentNode("", children_five, None)
+        ]
+        children_one = [
+            ParentNode("ul", children_two, None)
+        ]
+        node = ParentNode("nav", children_one, {"class":"navlist", "id":"navbar"})
+        with self.assertRaises(ValueError) as context:
+            node.to_html()
+        self.assertEqual(str(context.exception), "A tag is required")
+        
+    def test_nested_parent_child_err(self):
+        children_five = []
+        children_four = [
+            LeafNode("a", "About", {"href":"/about"})
+        ]
+        children_three = [
+            LeafNode("a", "Home", {"href":"/home"})
+        ]
+        children_two = [
+            ParentNode("li", children_three, None),
+            ParentNode("li", children_four, None),
+            ParentNode("li", children_five, None)
+        ]
+        children_one = [
+            ParentNode("ul", children_two, None)
+        ]
+        node = ParentNode("nav", children_one, {"class":"navlist", "id":"navbar"})
+        with self.assertRaises(ValueError) as context:
+            node.to_html()
+        self.assertEqual(str(context.exception), "Children are required")
 
 if __name__ == "__main__":
     unittest.main()
