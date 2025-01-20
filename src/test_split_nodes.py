@@ -8,6 +8,7 @@ from split_nodes import (
     extract_markdown_links, 
     split_nodes_image, 
     split_nodes_link,
+    text_to_textnode,
 )
 
 
@@ -123,8 +124,7 @@ class TestExtractMarkdownLinks(unittest.TestCase):
 
 
 class TestSplitNodesImage(unittest.TestCase):
-    def test_expected_output(self):
-        self.maxDiff = None 
+    def test_expected_output(self): 
         input_list = [
             TextNode("![alt one](/image-one.png) some filler text. ![alt two](/image-two.png) some more filler text. ![alt three](/image-three.png)", TextType.TEXT),
             TextNode("Even more text, for testing.", TextType.TEXT)
@@ -155,6 +155,25 @@ class TestSplitNodesLink(unittest.TestCase):
             TextNode("Even more text, for testing.", TextType.TEXT),
         ]
         self.assertEqual(split_nodes_link(input_list), expected_output)
+
+
+class TestTextToTextnode(unittest.TestCase):
+    def test_expected_output(self):
+        self.maxDiff = None
+        input_text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected_output = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertEqual(text_to_textnode(input_text), expected_output)
 
 
 if __name__ == "__main__":

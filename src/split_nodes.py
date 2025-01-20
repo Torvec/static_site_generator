@@ -3,8 +3,19 @@ import re
 from textnode import TextType, TextNode
 
 
+def text_to_textnode(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+
+
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
+
     for old_node in old_nodes:
         if old_node.text_type != TextType.TEXT:
             new_nodes.append(old_node)
@@ -40,13 +51,15 @@ def split_nodes_image(old_nodes):
             continue
         original_text = old_node.text
         images = extract_markdown_images(original_text)
+        
         if len(images) == 0:
             new_nodes.append(old_node)
             continue
         for alt, src in images:
-            sections = original_text.split(f"![{alt}]({src})", 1)
+            delimiter = f"![{alt}]({src})"
+            sections = original_text.split(delimiter, 1)
             if len(sections) != 2:
-                raise ValueError("Invalid markdown, image section not closed")
+                raise Exception("Invalid markdown, image section not closed")
             if sections[0] != "":
                 new_nodes.append(TextNode(sections[0], TextType.TEXT))
             new_nodes.append(TextNode(alt, TextType.IMAGE, src))
@@ -66,13 +79,15 @@ def split_nodes_link(old_nodes):
             continue
         original_text = old_node.text
         links = extract_markdown_links(original_text)
+       
         if len(links) == 0:
             new_nodes.append(old_node)
             continue
         for text, url in links:
-            sections = original_text.split(f"[{text}]({url})", 1)
+            delimiter = f"[{text}]({url})"
+            sections = original_text.split(delimiter, 1)
             if len(sections) != 2:
-                raise ValueError("Invalid markdown, link section not closed")
+                raise Exception("Invalid markdown, link section not closed")
             if sections[0] != "":
                 new_nodes.append(TextNode(sections[0], TextType.TEXT))
             new_nodes.append(TextNode(text, TextType.LINK, url))
