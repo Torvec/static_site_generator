@@ -2,7 +2,13 @@ import unittest
 
 from textnode import TextType, TextNode
 
-from split_nodes import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
+from split_nodes import (
+    split_nodes_delimiter, 
+    extract_markdown_images, 
+    extract_markdown_links, 
+    split_nodes_image, 
+    split_nodes_link,
+)
 
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -114,6 +120,41 @@ class TestExtractMarkdownLinks(unittest.TestCase):
     def test_expected_output(self):
         text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
         self.assertEqual(extract_markdown_links(text), [("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")])
+
+
+class TestSplitNodesImage(unittest.TestCase):
+    def test_expected_output(self):
+        self.maxDiff = None 
+        input_list = [
+            TextNode("![alt one](/image-one.png) some filler text. ![alt two](/image-two.png) some more filler text. ![alt three](/image-three.png)", TextType.TEXT),
+            TextNode("Even more text, for testing.", TextType.TEXT)
+        ]
+        expected_output = [
+            TextNode("alt one", TextType.IMAGE, "/image-one.png"),
+            TextNode(" some filler text. ", TextType.TEXT),
+            TextNode("alt two", TextType.IMAGE, "/image-two.png"),
+            TextNode(" some more filler text. ", TextType.TEXT),
+            TextNode("alt three", TextType.IMAGE, "/image-three.png"),
+            TextNode("Even more text, for testing.", TextType.TEXT),
+        ]
+        self.assertEqual(split_nodes_image(input_list), expected_output)
+
+
+class TestSplitNodesLink(unittest.TestCase):
+    def test_expected_output(self):
+        input_list = [
+            TextNode("[text one](https://www.one.org) some filler text. [text two](https://www.two.org) some more filler text. [text three](https://www.three.org)", TextType.TEXT),
+            TextNode("Even more text, for testing.", TextType.TEXT)
+        ]
+        expected_output = [
+            TextNode("text one", TextType.LINK, "https://www.one.org"),
+            TextNode(" some filler text. ", TextType.TEXT),
+            TextNode("text two", TextType.LINK, "https://www.two.org"),
+            TextNode(" some more filler text. ", TextType.TEXT),
+            TextNode("text three", TextType.LINK, "https://www.three.org"),
+            TextNode("Even more text, for testing.", TextType.TEXT),
+        ]
+        self.assertEqual(split_nodes_link(input_list), expected_output)
 
 
 if __name__ == "__main__":
