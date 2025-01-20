@@ -20,7 +20,7 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode("p", "yo", None, None)
         with self.assertRaises(NotImplementedError) as context:
             node.to_html()
-        self.assertEqual(str(context.exception), "Method not implemented")
+        self.assertEqual(str(context.exception), "to_html method not implemented")
 
 
 class TestLeafNode(unittest.TestCase):
