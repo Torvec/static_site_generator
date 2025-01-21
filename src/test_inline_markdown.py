@@ -159,7 +159,6 @@ class TestSplitNodesLink(unittest.TestCase):
 
 class TestTextToTextnode(unittest.TestCase):
     def test_expected_output(self):
-        self.maxDiff = None
         input_text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
         expected_output = [
             TextNode("This is ", TextType.TEXT),
