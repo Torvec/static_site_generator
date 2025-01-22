@@ -22,8 +22,6 @@ def get_all_items(source, destination):
         if os.path.isdir(source_path):
             if not os.path.exists(destination_path):
                 os.mkdir(destination_path)
-                print(f"Sub-directory: {destination_path} Created")
             get_all_items(source_path, destination_path)
         elif os.path.isfile(source_path):
-            print(f"File found: {item}")
             shutil.copy(source_path, destination_path)
